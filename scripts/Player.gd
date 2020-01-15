@@ -2,6 +2,7 @@ extends KinematicBody2D
 
 class_name Player
 signal bump
+signal unlocked
 
 var facing = 'down'
 var has_key: bool = false
@@ -74,10 +75,16 @@ func move(direction):
     if $Ray.is_colliding():
         var tile_id = 0
         var global_pos = $Ray.global_position + $Ray.cast_to.rotated($Ray.global_rotation)
+        stop_footsteps()
         if $Ray.get_collider() is TileMap:
             var tilemap = $Ray.get_collider() as TileMap
-            tile_id = tilemap.get_cellv(tilemap.world_to_map(global_pos))
-        stop_footsteps()
+            var tilepos = tilemap.world_to_map(global_pos)
+            tile_id = tilemap.get_cellv(tilepos)
+            if tile_id == 1 and has_key:
+                $DoorUnlock.play()
+                has_key = false
+                emit_signal('unlocked')
+                tilemap.set_cellv(tilepos, -1)
         if last_bump != facing:
             var bump_offset = bumps[tile_id][0]
             var bump_random = bumps[tile_id][1]

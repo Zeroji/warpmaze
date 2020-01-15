@@ -14,6 +14,7 @@ func _process(delta):
 
 var player_near_rat: bool = false
 var player_has_key: bool = false
+var door_unlocked = false
 
 func _on_Rat_Area_body_entered(body):
     if body is Player:
@@ -31,3 +32,8 @@ func _on_Player_bump(pos):
         $HUD/KeyIcon.visible = true
         $Player.has_key = true
         player_has_key = false
+        $Player/KeyJingle/Next.start()
+
+func _on_Player_unlocked():
+    $HUD/KeyIcon.visible = false
+    door_unlocked = true

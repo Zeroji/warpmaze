@@ -5,6 +5,7 @@
 *.ase
 
 # Raw audio from freesound.org
+[0-9][0-9][0-9][0-9]*__*.mp3*
 [0-9][0-9][0-9][0-9]*__*.wav*
 
 # rFXGen
