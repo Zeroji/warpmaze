@@ -43,9 +43,20 @@ func process_input():
     else:
         self.move(direction)
 
+var light_speed = Vector2.ZERO
+var light_e_speed = 0
+
 func _physics_process(delta):
     if !$Tween.is_active():
         process_input()
+    # animate light
+    light_speed += Vector2(randf() * 1.2 - 0.6, randf() * 1.2 - 0.6)
+    light_speed = light_speed.clamped(2)
+    light_e_speed = clamp(light_e_speed + randf() * 0.2 - 0.09, -0.5, 0.5)
+    $Light.energy = min(1, max(0, $Light.energy + light_e_speed * delta))
+    $Light.texture_scale = 0.25 + 0.75 * $Light.energy
+    $Light.position += light_speed * delta
+    $Light.position = $Light.position.clamped(4)
 
 func play_anim(name):
     if $Anim.is_playing():
