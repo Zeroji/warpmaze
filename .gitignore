@@ -4,9 +4,8 @@
 # Aseprite base resources
 *.ase
 
-# Non-free assets
-**/paid/**/*.wav
-**/paid/**/*.ogg
+# Raw audio from freesound.org
+[0-9][0-9][0-9][0-9][0-9][0-9]__*.wav*
 
 # rFXGen
 *.rfx

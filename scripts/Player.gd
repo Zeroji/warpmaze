@@ -4,11 +4,15 @@ class_name Player
 
 var facing = 'down'
 var last_bump = 'none'
+var footstep_offset = 0
+const footstep_step = 0.2
+const bump_duration = 1
 
 const TILE = 32
 
 const facings = ['down', 'right', 'up', 'left', 'down']
 const faces = {'down': 0, 'right': 1, 'up': 2, 'left': 3}
+const bumps = [[0, 5], [5, 2]]
 
 var inputs = {
     'down':   Vector2.DOWN,
@@ -17,9 +21,8 @@ var inputs = {
     'left':   Vector2.LEFT,
 }
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
-    pass # Replace with function body.
+    $SoundBump/Timer.wait_time = bump_duration * 0.9
 
 func process_input():
     var direction = 'none'
@@ -30,7 +33,8 @@ func process_input():
         if $Anim.is_playing():
             $Anim.seek(0, true)
             $Anim.stop()
-        $Footsteps.stop()
+        stop_footsteps()
+        last_bump = 'none' # allow second bump if second input
     else:
         self.move(direction)
 
@@ -52,20 +56,21 @@ func move(direction):
     $Ray.cast_to = mv
     $Ray.force_raycast_update()
     if $Ray.is_colliding():
+        var tile_id = 0
         if $Ray.get_collider() is TileMap:
             var tilemap = $Ray.get_collider() as TileMap
             var global_pos = $Ray.global_position + $Ray.cast_to.rotated($Ray.global_rotation)
-            var tile_id = tilemap.get_cellv(tilemap.world_to_map(global_pos))
-        if $Footsteps.playing:
-            $Footsteps.stop()
+            tile_id = tilemap.get_cellv(tilemap.world_to_map(global_pos))
+        stop_footsteps()
         if last_bump != facing:
-            $SoundBump.play()
+            var bump_offset = bumps[tile_id][0]
+            var bump_random = bumps[tile_id][1]
+            play_bump((randi() % bump_random + bump_offset) * bump_duration)
             last_bump = facing
         play_anim('bump_' + facing)
     else:
         last_bump = 'none'
-        if not $Footsteps.playing:
-            $Footsteps.play()
+        play_footsteps()
         $RayLeft.cast_to = (mv * 0.75).rotated(-PI/6)
         $RayLeft.force_raycast_update()
         if $RayLeft.is_colliding():
@@ -104,4 +109,22 @@ func warp(mv, warp_dir): # +1 for right, -1 for left
     warping = true
     $Tween.interpolate_property(self, 'position', position, position + mv / 2, 0.1, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
     $Tween.start()
-    
+
+func play_footsteps():
+    if not $Footsteps.playing:
+        $Footsteps.play(footstep_offset)
+
+func stop_footsteps():
+    if $Footsteps.playing:
+        footstep_offset = stepify($Footsteps.get_playback_position(), footstep_step)
+        $Footsteps.stop()
+
+func play_bump(position=0):
+    stop_bump()
+    $SoundBump.pitch_scale = randf() * 0.1 + randf() * 0.2 + 0.85
+    $SoundBump.play(position)
+    $SoundBump/Timer.start()
+
+func stop_bump(): # called from $SoundBump/Timer.timeout
+    if $SoundBump.playing:
+        $SoundBump.stop()
