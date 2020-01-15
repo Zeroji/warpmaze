@@ -1,12 +1,16 @@
 extends KinematicBody2D
 
 class_name Player
+signal bump
 
 var facing = 'down'
+var has_key: bool = false
+
 var last_bump = 'none'
 var footstep_offset = 0
 const footstep_step = 0.2
 const bump_duration = 1
+const key_duration = 1
 
 const TILE = 32
 
@@ -22,7 +26,8 @@ var inputs = {
 }
 
 func _ready():
-    $SoundBump/Timer.wait_time = bump_duration * 0.9
+    $SoundBump/Timer.wait_time = bump_duration * 0.95
+    $KeyJingle/Stop.wait_time = key_duration * 0.95
 
 func process_input():
     var direction = 'none'
@@ -57,14 +62,15 @@ func move(direction):
     $Ray.force_raycast_update()
     if $Ray.is_colliding():
         var tile_id = 0
+        var global_pos = $Ray.global_position + $Ray.cast_to.rotated($Ray.global_rotation)
         if $Ray.get_collider() is TileMap:
             var tilemap = $Ray.get_collider() as TileMap
-            var global_pos = $Ray.global_position + $Ray.cast_to.rotated($Ray.global_rotation)
             tile_id = tilemap.get_cellv(tilemap.world_to_map(global_pos))
         stop_footsteps()
         if last_bump != facing:
             var bump_offset = bumps[tile_id][0]
             var bump_random = bumps[tile_id][1]
+            emit_signal("bump", global_pos)
             play_bump((randi() % bump_random + bump_offset) * bump_duration)
             last_bump = facing
         play_anim('bump_' + facing)
@@ -111,10 +117,12 @@ func warp(mv, warp_dir): # +1 for right, -1 for left
     $Tween.start()
 
 func play_footsteps():
+    play_keys(false)
     if not $Footsteps.playing:
         $Footsteps.play(footstep_offset)
 
 func stop_footsteps():
+    stop_keys()
     if $Footsteps.playing:
         footstep_offset = stepify($Footsteps.get_playback_position(), footstep_step)
         $Footsteps.stop()
@@ -126,5 +134,20 @@ func play_bump(position=0):
     $SoundBump/Timer.start()
 
 func stop_bump(): # called from $SoundBump/Timer.timeout
+    play_keys()
     if $SoundBump.playing:
         $SoundBump.stop()
+
+func play_keys(force=true): # called from $KeyJingle/Next.timeout
+    if $KeyJingle.playing or not has_key:
+        return
+    if force or $KeyJingle/Next.is_stopped():
+        $KeyJingle.pitch_scale = randf() * 0.2 + 0.8
+        $KeyJingle.play((randi() % 6) * key_duration)
+        $KeyJingle/Stop.start()
+
+func stop_keys():
+    if $KeyJingle.playing:
+        $KeyJingle.stop()
+    $KeyJingle/Next.wait_time = randf() * 3 + 2
+    $KeyJingle/Next.start()
