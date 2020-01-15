@@ -1,0 +1,16 @@
+# Godot files
+.import/
+
+# Aseprite base resources
+*.ase
+
+# Non-free assets
+**/paid/**/*.wav
+**/paid/**/*.ogg
+
+# rFXGen
+*.rfx
+rfxgen*
+
+# Environment
+.vscode/
