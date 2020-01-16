@@ -18,6 +18,7 @@ const TILE = 32
 const facings = ['down', 'right', 'up', 'left', 'down']
 const faces = {'down': 0, 'right': 1, 'up': 2, 'left': 3}
 const bumps = [[0, 5], [5, 2]]
+const bump_total = 7
 
 var inputs = {
     'down':   Vector2.DOWN,
@@ -89,7 +90,7 @@ func move(direction):
             var bump_offset = bumps[tile_id][0]
             var bump_random = bumps[tile_id][1]
             emit_signal("bump", global_pos)
-            play_bump((randi() % bump_random + bump_offset) * bump_duration)
+            play_bump((randi() % bump_random + bump_offset + faces[facing] * bump_total) * bump_duration)
             last_bump = facing
         play_anim('bump_' + facing)
     else:
