@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=15 format=2]
 
 [ext_resource path="res://scripts/Level.gd" type="Script" id=1]
 [ext_resource path="res://assets/floorset.png" type="Texture" id=2]
@@ -9,6 +9,7 @@
 [ext_resource path="res://assets/sounds/squeak.wav" type="AudioStream" id=7]
 [ext_resource path="res://assets/sounds/key_pick.wav" type="AudioStream" id=8]
 [ext_resource path="res://assets/key_icon.png" type="Texture" id=9]
+[ext_resource path="res://assets/sounds/level_complete.wav" type="AudioStream" id=10]
 
 [sub_resource type="TileSet" id=1]
 0/name = "Floor"
@@ -37,6 +38,9 @@ height = 16.0
 
 [sub_resource type="CircleShape2D" id=3]
 radius = 8.0
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 16, 16 )
 
 [node name="Level" type="Node2D"]
 script = ExtResource( 1 )
@@ -135,9 +139,19 @@ layer = 2
 visible = false
 position = Vector2( 14, 8 )
 texture = ExtResource( 9 )
+
+[node name="Area2D2" type="Area2D" parent="."]
+position = Vector2( 656, 48 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D2"]
+shape = SubResource( 4 )
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Area2D2"]
+stream = ExtResource( 10 )
 [connection signal="bump" from="Player" to="." method="_on_Player_bump"]
 [connection signal="unlocked" from="Player" to="." method="_on_Player_unlocked"]
 [connection signal="body_entered" from="Rat/Area" to="." method="_on_Rat_Area_body_entered"]
 [connection signal="body_exited" from="Rat/Area" to="." method="_on_Rat_Area_body_exited"]
 [connection signal="timeout" from="Rat/SqueakStop" to="Rat" method="_on_SqueakStop_timeout"]
 [connection signal="timeout" from="Rat/SqueakNext" to="Rat" method="_on_SqueakNext_timeout"]
+[connection signal="body_entered" from="Area2D2" to="." method="_on_Area2D2_body_entered"]

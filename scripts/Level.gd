@@ -37,3 +37,8 @@ func _on_Player_bump(pos):
 func _on_Player_unlocked():
     $HUD/KeyIcon.visible = false
     door_unlocked = true
+
+
+func _on_Area2D2_body_entered(body):
+    if body is Player:
+        $Area2D2/AudioStreamPlayer.play()
