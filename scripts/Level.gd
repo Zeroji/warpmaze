@@ -31,7 +31,7 @@ func _on_Player_bump(pos):
         $SoundLayer/Keys.play()
         $HUD/KeyIcon.visible = true
         $Player.has_key = true
-        player_has_key = false
+        player_has_key = true
         $Player/KeyJingle/Next.start()
 
 func _on_Player_unlocked():
